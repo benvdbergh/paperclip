@@ -1,10 +1,16 @@
 import { createHash } from "node:crypto";
-import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
-import { migrate as migratePg } from "drizzle-orm/postgres-js/migrator";
 import { readFile, readdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 import * as schema from "./schema/index.js";
+
+type DrizzlePostgresJsModule = typeof import("drizzle-orm/postgres-js");
+type DrizzlePostgresJsMigratorModule = typeof import("drizzle-orm/postgres-js/migrator");
+
+const require = createRequire(import.meta.url);
+const drizzlePg = (require("drizzle-orm/postgres-js") as DrizzlePostgresJsModule).drizzle;
+const migratePg = (require("drizzle-orm/postgres-js/migrator") as DrizzlePostgresJsMigratorModule).migrate;
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("./migrations", import.meta.url));
 const DRIZZLE_MIGRATIONS_TABLE = "__drizzle_migrations";

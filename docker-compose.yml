@@ -17,18 +17,31 @@ services:
 
   server:
     build: .
+    user: "${PAPERCLIP_UID:-1000}:${PAPERCLIP_GID:-1000}"
+    group_add:
+      - "${HOST_DOCKER_GID:-135}"
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "3100:3100"
     environment:
       DATABASE_URL: postgres://paperclip:paperclip@db:5432/paperclip
-      PORT: "3100"
+      PORT: "${PORT:-3100}"
       SERVE_UI: "true"
       PAPERCLIP_DEPLOYMENT_MODE: "authenticated"
       PAPERCLIP_DEPLOYMENT_EXPOSURE: "private"
       PAPERCLIP_PUBLIC_URL: "${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}"
+      PAPERCLIP_ALLOWED_HOSTNAMES: "${PAPERCLIP_ALLOWED_HOSTNAMES}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
+      # Run-scoped agent API tokens (PAPERCLIP_API_KEY in adapters); must match verifyLocalAgentJwt.
+      # Defaults to BETTER_AUTH_SECRET so Docker matches local onboard (which sets both).
+      PAPERCLIP_AGENT_JWT_SECRET: "${PAPERCLIP_AGENT_JWT_SECRET:-${BETTER_AUTH_SECRET}}"
     volumes:
       - paperclip-data:/paperclip
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Claude skill discovery uses $HOME/.claude/skills; HOME is /paperclip in the image (not /home/node).
+      # Bind-mount host skills (edit CLAUDE_SKILLS_HOST_DIR in .env if needed).
+      - ${CLAUDE_SKILLS_HOST_DIR:-${HOME}/.claude/skills}:/paperclip/.claude/skills
     depends_on:
       db:
         condition: service_healthy
