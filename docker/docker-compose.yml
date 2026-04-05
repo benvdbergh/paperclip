@@ -16,12 +16,9 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   server:
-    build: .
-    user: "${PAPERCLIP_UID:-1000}:${PAPERCLIP_GID:-1000}"
-    group_add:
-      - "${HOST_DOCKER_GID:-135}"
-    security_opt:
-      - no-new-privileges:true
+    build:
+      context: ..
+      dockerfile: Dockerfile
     ports:
       - "3100:3100"
     environment:
