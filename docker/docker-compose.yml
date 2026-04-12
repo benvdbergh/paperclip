@@ -28,7 +28,11 @@ services:
       PAPERCLIP_DEPLOYMENT_MODE: "authenticated"
       PAPERCLIP_DEPLOYMENT_EXPOSURE: "private"
       PAPERCLIP_PUBLIC_URL: "${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}"
+      PAPERCLIP_ALLOWED_HOSTNAMES: "${PAPERCLIP_ALLOWED_HOSTNAMES:-}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
+      # Run JWT minting for local adapters (PAPERCLIP_API_KEY); not read by Better Auth.
+      PAPERCLIP_AGENT_JWT_SECRET: "${PAPERCLIP_AGENT_JWT_SECRET:-${BETTER_AUTH_SECRET}}"
+      GITHUB_TOKEN: "${GITHUB_TOKEN:?GITHUB_TOKEN must be set}"
     volumes:
       - paperclip-data:/paperclip
     depends_on:

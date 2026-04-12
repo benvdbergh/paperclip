@@ -12,7 +12,7 @@
 ## Baseline (as of 2026-04-06)
 
 - **Pinned parent release:** tag **`v2026.403.0`** @ `a07237779bd5391a4683a754ed95249d57a49b2c`
-- **Fork `master` tip:** `a0723777` **+** one commit adding only `FORK.md` (ledger; no product code changes vs the tag).
+- **Fork `master` tip:** `a0723777` **+** ledger and Docker compose hostname wiring (see **Divergence ledger**).
 - **Note:** After fetch, `upstream/master` may be **ahead** of this tag (parent continues on `master`). This fork intentionally tracks the **named release**, not necessarily `upstream/master` HEAD, until you choose a newer pin.
 
 ## Fork policy
@@ -28,7 +28,8 @@ Narrative context (adapter plugins, Hermes externalization, UI QoL) is in root `
 
 | Area | Type | Keep / Adopt / Hybrid | Reason | Last reviewed | Parent link |
 |------|------|------------------------|--------|---------------|-------------|
-| `FORK.md` | documentation | Keep | Fork governance ledger; only file differing from parent tag `v2026.403.0` @ `a0723777` | 2026-04-06 | — |
+| `FORK.md` | documentation | Keep | Fork governance ledger; records divergence from parent tag `v2026.403.0` @ `a0723777` | 2026-04-06 | — |
+| `docker/docker-compose*.yml` — env wiring | wiring | Hybrid | Pass host `.env` into the app container: `PAPERCLIP_ALLOWED_HOSTNAMES` for LAN/Tailscale; `PAPERCLIP_AGENT_JWT_SECRET` defaults to `BETTER_AUTH_SECRET` when unset; full-stack `docker-compose.yml` requires `GITHUB_TOKEN` for `gh`/git tooling in the image | 2026-04-12 | — |
 
 ## Sync history
 

@@ -28,11 +28,13 @@ docker build -t paperclip-local \
 
 ```sh
 docker build -t paperclip-local . && \
+SECRET=$(openssl rand -hex 32) && \
 docker run --name paperclip \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
   -e PAPERCLIP_HOME=/paperclip \
-  -e BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
+  -e BETTER_AUTH_SECRET=$SECRET \
+  -e PAPERCLIP_AGENT_JWT_SECRET=$SECRET \
   -v "$(pwd)/data/docker-paperclip:/paperclip" \
   paperclip-local
 ```
@@ -82,11 +84,16 @@ Pass `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` to enable local adapter runs.
 Paperclip server + PostgreSQL 17. The database is health-checked before the server starts.
 
 ```sh
+GITHUB_TOKEN="$(gh auth token)" \
 BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
   docker compose -f docker/docker-compose.yml up --build
 ```
 
+Use a fine-scoped personal access token instead if `gh` is not installed or logged in on the host. Full-stack compose **requires** `GITHUB_TOKEN`: the image includes GitHub CLI and related tooling that expect this variable inside the container.
+
 PostgreSQL data persists in a named Docker volume (`pgdata`). Paperclip data persists in `paperclip-data`.
+
+**Agent API JWT:** Local adapters receive a short-lived run token as `PAPERCLIP_API_KEY`. The server signs that JWT with `PAPERCLIP_AGENT_JWT_SECRET`, which is separate from `BETTER_AUTH_SECRET` (session cookies). The compose files set `PAPERCLIP_AGENT_JWT_SECRET` from `BETTER_AUTH_SECRET` when you do not define it yourself; override only if you want a distinct signing secret.
 
 ### Untrusted PR review
 
@@ -175,8 +182,10 @@ The `docker/quadlet/` directory contains unit files to run Paperclip + PostgreSQ
 3. Create a secrets env file (keep out of version control):
 
    ```sh
+   SECRET=$(openssl rand -hex 32)
    cat > ~/.config/containers/systemd/paperclip.env <<EOL
-   BETTER_AUTH_SECRET=$(openssl rand -hex 32)
+   BETTER_AUTH_SECRET=$SECRET
+   PAPERCLIP_AGENT_JWT_SECRET=$SECRET
    POSTGRES_USER=paperclip
    POSTGRES_PASSWORD=paperclip
    POSTGRES_DB=paperclip
